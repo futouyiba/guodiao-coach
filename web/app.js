@@ -3,6 +3,27 @@
 const main = document.getElementById('main');
 const api = window.Coach;
 let data;
+const positions = new Map();
+const listRoutes = new Map();
+let currentRoute = location.hash || '#/fish';
+history.scrollRestoration = 'manual';
+
+function listReturn(page) {
+  const target = listRoutes.get(page) || href(page);
+  return link('返回上次查询', target, 'button secondary');
+}
+
+function activeFilters(page, params) {
+  const labels = { q: '关键词', condition: '条件', brand: '品牌', min: '最低kg', max: '最高kg' };
+  const entries = Object.entries(labels).filter(([key]) => params.get(key));
+  return element('div', { class: 'chips', 'aria-label': '已选筛选条件' }, entries.map(([key, label]) => {
+    const values = Object.fromEntries(params);
+    delete values[key];
+    delete values.page;
+    const value = key === 'condition' ? api.filters.find(([name]) => name === params.get(key))?.[1] || params.get(key) : params.get(key);
+    return link(`${label}：${value} ×`, href(page, values), 'chip');
+  }));
+}
 
 function element(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -97,6 +118,13 @@ function fishPage(params) {
     selectField('按原文条件筛选', 'condition', api.filters, condition)],
   '“提及底钓条件”不代表推荐底钓或已确认是淡水鱼；未提及的钓法不代表可用。所有结果仍须查看完整限制。'));
   main.append(resultsHeader(rows.length, '种鱼'));
+  main.append(activeFilters('fish', params));
+  if (!rows.length && query.trim()) {
+    const nearby = api.suggestions(data.fish, query, condition);
+    if (nearby.length) main.append(element('section', { class: 'panel' }, element('h2', {}, '也许你在找'),
+      element('p', { class: 'muted' }, '仅按名称相近提示，不自动认定为同一种鱼。'),
+      element('div', { class: 'chips' }, nearby.map(record => link(record.name, href(`fish/${record.id}`), 'chip')))));
+  }
   main.append(...(rows.length ? paginate(rows, params, records => element('div', { class: 'fish-grid' }, records.map(fishCard))) : [empty()]));
 }
 
@@ -120,6 +148,10 @@ function fishDetail(id) {
   if (!record) return notFound();
   main.append(element('div', { class: 'breadcrumb' }, link('鱼种攻略', href('fish')), ' / ', record.name),
     heading(record.name, '按顺序查条件、选文档列出的饵，再核对出钓准备。'));
+  main.append(listReturn('fish'), element('section', { class: 'panel' }, element('h2', {}, '出钓速览'),
+    element('p', {}, record.restriction_raw ?? '限制资料暂缺'),
+    element('p', {}, `文档列出 ${record.bait_listed.length} 个饵料词条${record.bait_general.length ? '，另有泛称（不展开）' : ''}；窝料${record.groundbait_raw === null ? '字段缺失' : record.groundbait_raw === '无' ? '原文标注无' : '有偏好类别'}。`),
+    element('p', { class: 'muted' }, '钓场、重量、配装资料待补；饵料仅表示文档列出，不代表最佳或成功率。')));
   const baits = element('section', { class: 'panel' }, element('h2', {}, '用什么饵'),
     element('p', { class: 'muted' }, '以下是文档列出的可用饵，不代表最佳饵或成功率。未列出不等于绝对无效。'),
     record.bait_listed.length ? baitLinks(record.bait_listed) : null,
@@ -195,7 +227,7 @@ function gearPage(params) {
     return;
   }
   const filtered = api.gearFilter(rows, { query, brand, min, max, sort });
-  main.append(element('p', { class: 'hint' }, '鱼钩表包含不同钩型，不能把三本钩或铅头钩当通用底钓鱼钩。尺寸与系列解析不可靠时只认完整名称；普通号和 /0 号不套用统一强弱规则。'),
+  main.append(activeFilters('gear', params), element('p', { class: 'hint' }, '鱼钩表包含不同钩型，不能把三本钩或铅头钩当通用底钓鱼钩。尺寸与系列解析不可靠时只认完整名称；普通号和 /0 号不套用统一强弱规则。'),
     resultsHeader(filtered.length, '条装备记录'));
   const label = kind === 'hooks' ? '钩拉力' : '轮锁轮拉力';
   const renderTable = records => element('div', { class: 'table-wrap' }, element('table', {},
@@ -211,6 +243,7 @@ function gearDetail(id) {
   if (!record) return notFound();
   const kind = record.kind === 'hook' ? 'hooks' : 'reels';
   main.append(element('div', { class: 'breadcrumb' }, link('装备资料', href('gear', { kind })), ' / 原文记录'),
+    listReturn('gear'),
     heading(record.name, '保留原文完整名称，不按系列、尺寸或周年简称合并。'),
     element('section', { class: 'panel conditions' }, element('h2', {}, record.kind === 'hook' ? '文档钩拉力' : '文档轮锁轮拉力'),
       element('p', {}, `${record.kg} kg`), element('p', { class: 'hint' }, '不是鱼重上限，不表示此装备适合所有钓法，也不能据此判断完整钓组安全。')),
@@ -248,6 +281,7 @@ function notFound() {
 
 function render() {
   const { page, id, params } = api.route(location.hash);
+  if (!id && ['fish', 'gear', 'bait'].includes(page)) listRoutes.set(page, location.hash || '#/fish');
   main.replaceChildren();
   for (const anchor of document.querySelectorAll('[data-nav]')) {
     if (anchor.dataset.nav === page) anchor.setAttribute('aria-current', 'page');
@@ -258,7 +292,7 @@ function render() {
   else if (page === 'gear') id ? gearDetail(id) : gearPage(params);
   else if (page === 'about' && !id) aboutPage();
   else notFound();
-  window.scrollTo(0, 0);
+  requestAnimationFrame(() => window.scrollTo(0, positions.get(location.hash || '#/fish') || 0));
 }
 
 async function start() {
@@ -271,7 +305,12 @@ async function start() {
     }));
     data = Object.fromEntries(names.map((name, index) => [name, loaded[index]]));
     render();
-    window.addEventListener('hashchange', () => { render(); main.focus({ preventScroll: true }); });
+    window.addEventListener('scroll', () => positions.set(currentRoute, window.scrollY), { passive: true });
+    window.addEventListener('hashchange', () => {
+      currentRoute = location.hash || '#/fish';
+      render();
+      main.focus({ preventScroll: true });
+    });
   } catch (error) {
     main.replaceChildren(heading('资料暂时无法读取', '请通过本地 HTTP 服务打开 coach/web/，不要直接双击 HTML。'),
       element('pre', {}, '在工作区运行：python coach/serve.py'),

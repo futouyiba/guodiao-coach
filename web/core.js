@@ -18,6 +18,15 @@
     const fields = { listed: 'bait_listed', excluded: 'bait_excluded', general: 'bait_general', groundbait: 'groundbait' };
     return (record[fields[mode]] || []).filter(item => includes(item, query));
   }
+  function suggestions(rows, query, condition = '') {
+    const characters = [...new Set(normalize(query))];
+    if (!characters.length) return [];
+    return rows.filter(record => fishMatches(record, '', condition))
+      .map(record => ({ record, score: characters.filter(character => normalize(record.name).includes(character)).length }))
+      .filter(item => item.score > 0)
+      .sort((left, right) => right.score - left.score || left.record.line_no - right.record.line_no)
+      .slice(0, 5).map(item => item.record);
+  }
   function gearFilter(rows, options = {}) {
     const { query = '', brand = '', min = '', max = '', sort = 'source' } = options;
     const result = rows.filter(record => includes(record.name, query) && (!brand || record.brand === brand)
@@ -32,7 +41,7 @@
     const [page = 'fish', id] = (path || 'fish').split('/');
     return { page, id, params: new URLSearchParams(query) };
   }
-  const api = { normalize, includes, filters, fishMatches, reverseMatches, gearFilter, route };
+  const api = { normalize, includes, filters, fishMatches, reverseMatches, gearFilter, route, suggestions };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Coach = api;
 })(globalThis);
