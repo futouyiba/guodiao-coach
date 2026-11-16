@@ -77,20 +77,14 @@ td a { display: inline-block; }
 footer { max-width: 1240px; margin: auto; border-top: 1px solid var(--line); padding: 24px 36px; color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 16px; }
 .loading { padding: 32px; }
 .tool-nav { border: 1px solid var(--lake); color: var(--lake); font-weight: 600; }
-.tool-banner { max-width: 1168px; margin: 24px auto 0; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #e4ecd9; border: 1px solid #b3c69e; border-left: 6px solid var(--lake); border-radius: 6px; }
-.tool-badge { display: inline-block; color: var(--lake); font-size: 12px; font-weight: 600; }
-.tool-banner h2 { font-size: 26px; margin: 4px 0 8px; }
-.tool-banner p { margin: 0 0 6px; }
-.tool-banner small { color: var(--muted); display: block; }
-.tool-actions { display: grid; flex: 0 0 auto; gap: 8px; text-align: center; }
-.tool-actions span { font-size: 12px; color: var(--muted); }
+.tool-banner { background: var(--lake); color: #fff; }
+.tool-banner-inner { max-width: 1240px; margin: auto; padding: 9px 36px; display: flex; align-items: center; gap: 16px; min-height: 40px; }
+.tool-banner-title { font-size: 14px; white-space: nowrap; }
+.tool-banner-desc { color: #d7e8dd; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tool-banner-link { color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,.6); }
+.tool-banner-link:hover { border-bottom-color: #fff; }
 @media (min-width: 651px) {
   .site-header { padding-top: 14px; padding-bottom: 14px; }
-  .tool-banner { margin-top: 16px; padding: 14px 20px; gap: 20px; }
-  .tool-banner .tool-badge { display: none; }
-  .tool-banner h2 { font-size: 22px; margin: 0 0 4px; }
-  .tool-banner p { font-size: 14px; margin-bottom: 4px; }
-  .tool-banner small { font-size: 12px; }
   main { padding-top: 20px; }
   .hero { padding: 0 0 12px; gap: 24px; }
   .hero .label { display: none; }
@@ -101,8 +95,6 @@ footer { max-width: 1240px; margin: auto; border-top: 1px solid var(--line); pad
   .toolbar { margin: 12px 0; padding: 20px; }
   .results-header { margin-top: 20px; }
 }
-@media (max-width: 1220px) { .tool-banner { margin-left: 28px; margin-right: 28px; } }
-@media (max-width: 650px) { .tool-banner { flex-direction: column; align-items: stretch; margin: 16px 16px 0; padding: 20px; gap: 16px; } .tool-banner h2 { font-size: 24px; } }
 @media (max-width: 1220px) { main { margin: 0 28px; } }
 @media (max-width: 850px) { .site-header { align-items: flex-start; flex-direction: column; padding: 20px 24px; gap: 14px; } .hero { grid-template-columns: 1fr; gap: 18px; } .index-note { max-width: 100%; } .fish-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .detail-grid { grid-template-columns: 1fr; gap: 0; } }
 @media (max-width: 540px) { main { margin: 0 16px; padding-top: 24px; } nav { width: 100%; gap: 4px; } nav a { padding: 7px 9px; font-size: 14px; } .site-header { padding: 16px; } .fish-grid { grid-template-columns: 1fr; } .toolbar, .panel { padding: 18px; } .fields > label { flex: 1 1 100%; } .fields input, .fields select { width: 100%; } .results-header { align-items: flex-start; flex-direction: column; gap: 4px; } footer { flex-direction: column; padding: 20px 16px; } }
@@ -113,13 +105,9 @@ footer { max-width: 1240px; margin: auto; border-top: 1px solid var(--line); pad
   .brand small { display: none; }
   nav { gap: 4px; }
   nav a { padding: 7px 9px; font-size: 14px; }
-  .tool-banner { display: grid; grid-template-columns: minmax(0, 1fr) auto; margin-top: 12px; padding: 12px; gap: 8px 12px; }
-  .tool-banner > div:first-child { display: contents; }
-  .tool-banner .tool-badge, .tool-banner p, .tool-actions span { display: none; }
-  .tool-banner h2 { font-size: 18px; margin: 0; grid-column: 1; grid-row: 1; }
-  .tool-banner small { grid-column: 1 / -1; grid-row: 2; font-size: 12px; }
-  .tool-actions { grid-column: 2; grid-row: 1; }
-  .tool-actions .button { font-size: 12px; padding: 6px 8px; min-height: 36px; }
+  .tool-banner-inner { padding: 8px 16px; gap: 10px; }
+  .tool-banner-desc { display: none; }
+  .tool-banner-link { font-size: 12px; }
   main { padding-top: 16px; }
   .hero { padding: 0; gap: 8px; }
   .hero .label { display: none; }
